@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشغل فيديو</title>
+    <!-- إضافة مكتبة أيقونات Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+          
+       
+ 
+    #episodes-list {
+        display: flex;
+        flex-direction: column; /* ترتيب العناصر عمودياً */
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        max-height: 300px; /* ارتفاع محدد للحاوية للسماح بالتمرير */
+        overflow-y: auto; /* تمكين التمرير العمودي */
+        background: rgba(15, 12, 41, 0.8); /* لون مناشقة للخلفية مع الشفافية */
+        border-radius: 10px; /* إضافة بعض الحواف الدائرية لتناسق التصميم */
+        padding: 10px; /* مساحة داخلية */
+    }
+    #episodes-list li {
+        margin-bottom: 10px;
+        background: #302b63; /* لون مناشقة للخلفية */
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        color: #fff; /* لون النص */
+    }
+    #episodes-list li:hover {
+        background: #555; /* تغيير اللون عند التمرير */
+    }
+
+
+
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            overflow: auto; /* تمكين التمرير عند الحاجة */
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            padding-top: 50px; /* توفير مساحة للنص الثابت */
+        }
+        #video-player {
+            width: 100%;
+            height: 500px;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer; /* لإظهار مؤشر يدوي عند التمرير فوق الفيديو */
+        }
+        #video-player iframe {
+            width: 100%;
+            height: 150%;
+            border: none;
+        }
+        #rights-link {
+            position: fixed;
+            top: 45px;
+            right: -2px;
+            background: transparent;
+            color: #fff;
+            padding: 100px 200px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 20px;
+            z-index: 10; /* التأكد من أن النص يظهر فوق جميع العناصر الأخرى */
+        }
+        #message {
+            font-size: 18px;
+            color: #fff;
+            text-align: center;
+            margin: 20px 0;
+            opacity: 0.8;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 20px 0;
+            background: linear-gradient(45deg, #ff512f, #dd2476);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 18px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .button i {
+            margin-right: 8px;
+        }
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* خلفية شفافة */
+            z-index: 2;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #0f0c29, #302b63 );
+            border-radius: 15px;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .modal-content.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .modal-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .modal-content li {
+            padding: 12px 16px;
+            color: #fff;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease;
+        }
+        .modal-content li:last-child {
+            border-bottom: none;
+        }
+        .modal-content li:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff0000;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        .close:hover {
+            background: #cc0000;
+        }
+        #notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 18px;
+            display: none;
+            z-index: 3;
+        }
+    </style>
+</head>
+<body>
+ 
+    <div class="container">
+        <div id="video-player" onclick="toggleFullScreen()">
+            <p id="message">يرجى تحديد حلقة لبدء المشاهدة</p>
+        </div>
+        <button class="button" onclick="showModal('season-modal')"><i class="fas fa-list"></i></button>
+        <button class="button" onclick="showDetails()"><i class="fas fa-info-circle"></i></button>
+    </div>
+
+    <div id="season-modal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('season-modal')">×</button>
+            <h2>إختر موسم</h2>
+            <ul>
+                <li onclick="showEpisodes('season1')">الموسم الأول</li>
+                <li onclick="showEpisodes('season2')">الموسم الثاني</li>
+                     <li onclick="showEpisodes('season3')">الموسم  الثالث</li>
+                          <li onclick="showEpisodes('season4')">الموسم   الرابع  </li>
+       <li onclick="showEpisodes('season5')">الموسم   الخامس   </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="episodes-modal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('episodes-modal')">×</button>
+            <h2>بدء المشاهدة </h2>
+            <ul id="episodes-list">
+                <!-- سيتم ملء هذه القائمة ديناميكياً -->
+            </ul>
+        </div>
+    </div>
+
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('details-modal')">×</button>
+
+            <p>لتكبير العرض، انقر نقرًا مزدوجًا على الحلقة ليتم تكبيرها لمشاهدة افضل</p>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+        let currentVideoUrl = '';
+        let videoIframe = null;
+        let currentVideoTime = 0;
+
+        function playEpisode(url) {
+            currentVideoUrl = url;
+            const videoPlayer = document.getElementById('video-player');
+            videoPlayer.innerHTML = `<iframe src="${url}" allow="autoplay; fullscreen" id="video-iframe"></iframe>`;
+            videoIframe = document.getElementById('video-iframe');
+            document.getElementById('message').style.display = 'none';
+            closeAllModals();
+
+            // استرجاع الوقت المخزن للفيديو
+            const storedTime = localStorage.getItem(`video-${url}-time`);
+            if (storedTime && videoIframe) {
+                setTimeout(() => {
+                    videoIframe.contentWindow.postMessage('{"event":"command","func":"seekTo","args":[' + storedTime + ']}', '*');
+                }, 1000);
+            }
+
+            // تحديث الوقت المخزن كل ثانية
+            if (videoIframe) {
+                setInterval(() => {
+                    if (videoIframe.contentWindow) {
+                        videoIframe.contentWindow.postMessage('{"event":"command","func":"getVideoTime","args":[]}', '*');
+                    }
+                }, 1000);
+            }
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            setTimeout(() => document.querySelector(`#${modalId} .modal-content`).classList.add('show'), 10);
+        }
+
+        function closeModal(modalId) {
+            const modalContent = document.querySelector(`#${modalId} .modal-content`);
+            modalContent.classList.remove('show');
+            setTimeout(() => document.getElementById(modalId).style.display = 'none', 300);
+        }
+
+        function closeAllModals() {
+            closeModal('season-modal');
+            closeModal('episodes-modal');
+            closeModal('details-modal');
+        }
+
+        function showEpisodes(season) {
+            const episodesList = document.getElementById('episodes-list');
+            let episodesHtml = '';
+
+            if (season === 'season1') {
+                episodesHtml = `
+              
+       
+<li onclick="selectEpisode('https://drive.google.com/file/d/1V596KQOq2wdo38b9_tZHxuIv0InfU_2G/preview')">الحلقة الأولى</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1InvDrLew0yX6iNuZkU7kapPEHxbQAMAX/preview')">الحلقة الثانية</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1YHCj_vdrVlpkRYxDpgPr0vHBSEnGSSD4/preview')">الحلقة الثالثة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1gZtDwjrWU_0surRtYmtWjJdrZ4pDycBr/preview')">الحلقة الرابعة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1Zmepm7Ppia-vQGXJX424jaeaECulj_hG/preview')">الحلقة الخامسة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1Qe_Q7yhrCUBIo2fKf4SrShRWbbL7uzaN/preview')">الحلقة السادسة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1S1B2s8d5WYielGaSXraG7O_1fYburiUY/preview')">الحلقة السابعة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1SJtFX6W1q3sEkCi1rsoBqdVMzWcAPb6E/preview')">الحلقة الثامنة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1Jokk3-NROepzr70A07cWCgRKNeMQweyP/preview')">الحلقة التاسعة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1Ix2IwCIhQz00M8PpeBx0fq4-TwQBWxXZ/preview')">الحلقة العاشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1vVAyLbgI6Y2rj3W1sIZivaNoOUa7SOSQ/preview')">الحلقة الحادية عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1Af4vZcFar7sX-abt2y8cG1aXn4TwnumP/preview')">الحلقة الثانية عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/10Eg7N30_mZa3AlXVc9b-xibqVRxCiASb/preview')">الحلقة الثالثة عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1jWCgeN326plifMEt2cvd19Crlmc38cH6/preview')">الحلقة الرابعة عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1xE01F9O5-lONqPrWI35Z4GZiwv6_fth4/preview')">الحلقة الخامسة عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1FmnfkTWH_IrjvDHcGt08LVp58k8vrEUf/preview')">الحلقة السادسة عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1M8Qgi2RUg3FanqSKFnde9a1cUnAqMQD6/preview')">الحلقة السابعة عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1YnRhMDkfqU_Vy6qH7EzkBK9fPVX0ZRMs/preview')">الحلقة الثامنة عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1X3XdrHoOJULxYlx9EfHQR5c2EPa8qnmS/preview')">الحلقة التاسعة عشرة</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1nzc3vAuk1uix-HxjwShAkr5uuzD6MeUl/preview')">الحلقة العشرون</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1Wg38P5Hf0bC9KMnkNHPvs7x0LM88n-yi/preview')">الحلقة الحادية والعشرون</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1pHUa1wuKXSSflLL4UDeCo7aLjQmFaofP/preview')">الحلقة الثانية والعشرون</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1f98oZP-F3oGcCkOUJ8VfECE2GIpraBHT/preview')">الحلقة الثالثة والعشرون</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1-89rElZMgHMqsnw9Bf1Tnz0gB7JwjEaS/preview')">الحلقة الرابعة والعشرون</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1-Plu8bYdrqXizx2zgVgwT8vhgd_AVZA7/preview')">الحلقة الخامسة والعشرون</li>
+<li onclick="selectEpisode('https://drive.google.com/file/d/1i9_1u5Q8_r7o9hDCgrwAEiPlaLWDsZRu/preview')"><i class="fas fa-tag"></i> الحلقة الأخيرة للموسم الأول</li>
+              
+
+
+
+
+
+
+                `;
+                
+                
+            } else if (season === 'season2') {
+                episodesHtml = `
+      <li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأولى</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العاشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأخيرة الموسم الثالث</li>
+                    
+                    
+                    
+                    
+                `;
+          
+          
+          
+          
+          
+            } else if (season === 'season3') {
+                episodesHtml = `
+  
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأولى</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العاشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأخيرة الموسم الثالث</li>
+                `;
+          
+          
+            } else if (season === 'season4') {
+                episodesHtml = `
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأولى</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العاشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأخيرة الموسم الرابع</li></li>
+
+                `;
+            
+              
+              
+              
+            } else if (season === 'season5') {
+                episodesHtml = `
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأولى</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العاشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السادسة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة السابعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثامنة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة التاسعة عشرة</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة العشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الحادية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثانية والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الثالثة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الرابعة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الخامسة والعشرون</li>
+<li onclick="selectEpisode('')"><i class="fas fa-lock"></i> الحلقة الأخيرة الموسم الخامس</li></li>
+
+                `;
+                    
+              
+            }
+            episodesList.innerHTML = episodesHtml;
+            closeModal('season-modal');
+            showModal('episodes-modal');
+        }
+
+        function selectEpisode(url) {
+            closeModal('episodes-modal');
+            playEpisode(url);
+        }
+
+        function showDetails() {
+            showModal('details-modal');
+        }
+
+        function toggleFullScreen() {
+            const videoPlayer = document.getElementById('video-player');
+            if (videoPlayer.requestFullscreen) {
+                videoPlayer.requestFullscreen();
+            } else if (videoPlayer.mozRequestFullScreen) { // Firefox
+                videoPlayer.mozRequestFullScreen();
+            } else if (videoPlayer.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                videoPlayer.webkitRequestFullscreen();
+            } else if (videoPlayer.msRequestFullscreen) { // IE/Edge
+                videoPlayer.msRequestFullscreen();
+            }
+        }
+
+        window.onmessage = function(event) {
+            if (event.data.event === 'command' && event.data.func === 'getVideoTime') {
+                currentVideoTime = event.data.args;
+                if (currentVideoUrl) {
+                    localStorage.setItem(`video-${currentVideoUrl}-time`, currentVideoTime);
+                }
+            }
+        }
+
+        // إغلاق النوافذ المنبثقة عند النقر خارجها
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeAllModals();
+            }
+        }
+    </script>
+        <script>
+
+      function checkInternetConnection() {
+
+    if (!navigator.onLine) {
+        document.body.classList.add('offline');
+        document.body.innerHTML = '<p> ليس لديك اتصال إنترنت</p>';
+        document.body.style.backgroundColor = 'black';
+        document.body.style.color = 'white';
+        document.body.style.display = 'flex';
+        document.body.style.justifyContent = 'center';
+        document.body.style.alignItems = 'center';
+        document.body.style.height = '100vh';
+        document.body.style.margin = '0';
+        document.body.style.fontSize = '24px';
+    }
+}
+
+window.addEventListener('online', checkInternetConnection);
+window.addEventListener('offline', checkInternetConnection);
+
+// فحص الاتصال بشكل دوري
+setInterval(checkInternetConnection, 3000);
+
+    </script>
+</body>
+</html>
